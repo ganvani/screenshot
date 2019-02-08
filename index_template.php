@@ -9,7 +9,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
-<script src="template2.js"></script>
+<script src="template1.js"></script>
 <style>
     .fakeimg {
     height: 200px;
@@ -55,18 +55,18 @@
     <div class="row">
         <div class="col-sm-4">
             <div id="image_preview">
-                <img  width="70%" src="<?php echo 'http://'.$_SERVER[HTTP_HOST].$_SERVER[REQUEST_URI].'/QUFumA7m.png'?>" />   
+                <img  width="70%" src="<?php echo 'http://'.$_SERVER[HTTP_HOST].'/screenshot'.'/template'.'/'.'template01.png'?>" />   
             </div>
         </div>
         <div class="col-sm-4">
             <div id="image_preview">
-                <?php if (file_exists('output.png')) 
+                <?php if (file_exists('output_template1.png')) 
                 { ?>
-                    <img id="previewing" width="70%"  src="<?php echo 'http://'.$_SERVER[HTTP_HOST].$_SERVER[REQUEST_URI].'/'.'output.png'?>" />
-                    <a href="<?php echo 'http://'.$_SERVER[HTTP_HOST].$_SERVER[REQUEST_URI].'/'.'output.png'?>" download>Download</a>
+                    <img id="previewing_data" width="70%"  src="<?php echo 'http://'.$_SERVER[HTTP_HOST].'/screenshot'.'/'.'output_template1.png'?>" />
+                    <a href="<?php echo 'http://'.$_SERVER[HTTP_HOST].'/screenshot'.'/'.'output_template1.png'?>" download>Download</a>
 
                 <?php } else {?>
-                    <img id="previewing" width="70%" src="<?php echo 'http://'.$_SERVER[HTTP_HOST].$_SERVER[REQUEST_URI].'/template'.'/'.'template02.png'?>" />
+                    <img id="previewing_data" width="70%" src="<?php echo 'http://'.$_SERVER[HTTP_HOST].'/screenshot'.'/template'.'/'.'template01.png'?>" />
                 <?php } ?>
             </div>              
         </div>     

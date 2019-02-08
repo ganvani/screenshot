@@ -5,7 +5,7 @@ $("#uploadimage").on('submit',(function(e) {
     $("#message").empty();
    
     $.ajax({
-    url: "ajax_php_file.php", // Url to which the request is send
+    url: "template1.php", // Url to which the request is send
     type: "POST",             // Type of request to be send, called as method
     data: new FormData(this), // Data sent to server, a set of key/value pairs (i.e. form fields and values)
     contentType: false,       // The content type used when sending data to the server.
@@ -16,20 +16,28 @@ $("#uploadimage").on('submit',(function(e) {
      },      // To send DOMDocument or non processed data file it is set to false
     success: function(data)   // A function to be called if request succeeds
     {
+        console.log("ok");
+        console.log(data);
+        var obj=JSON.parse(data);
         setTimeout(function(){
-            $('#previewing').attr('src','output.png');
+            $('#previewing_data').attr('src','');
+            $('#previewing_data').attr('src',obj.output);
             $('#loader').hide();
-        },1000);
+        },2000);
 
         //window.location.reload(true);
 
     },
     error:function(data)
     {
+        console.log("ok");
+        console.log(data);
+        var obj=JSON.parse(data);
         setTimeout(function(){
-            $('#previewing').attr('src','output.png');
+            $('#previewing_data').attr('src','');
+            $('#previewing_data').attr('src',obj.output);
             $('#loader').hide();
-        },1000);
+        },2000);
     }
     });
 }));
