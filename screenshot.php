@@ -1,4 +1,8 @@
 <?php 
+    require __DIR__.'/../vendor/autoload.php';
+
+    use GDText\Box;
+    use GDText\Color;
     error_reporting(E_ALL & ~E_WARNING);
 
     $options = ['-t'=>'template image','-i'=>'background image','-s'=>'screen-shot image','-f'=>'fornt content',
@@ -10,8 +14,10 @@
     if (count($parameter) <= 0 ) { 
         // For Help command
 
-        print "\n\n  The list of command line options provided by the Screen-Shot PHP Script.";
-        print "\n\n  Option : \n\n";
+        print "\n php screenshot.php -t TemplateFilename -x TemplateConfigFilename -i [BackgroundimageFilename] -s [ScreenshotFilename] -f [Forntcontent] -a [Forntcolor] -z [ForntSize] -c [BackgroundColor] -o [OutputImageResolution] -r [OutputFileExtension] \n\n";
+        print "\n  The list of command line options provided by the Screen-Shot PHP Script.";
+        print "\n  Option : \n";
+
         foreach($options as $key => $value)
         {
             print "\n".$key .": \t\t\t".$value."\n";
@@ -32,15 +38,16 @@
             if($template_ext == "png")
             {
                 // template file path
-                $template_filepath=dirname(__FILE__) ."/template"."/".$parameter['t'];
-                
+                $template_filepath = $parameter['t'];
+              
                 if(!file_exists($template_filepath))
                 {
-                 print "\n\n Please enter a valid template file name.\n\n";
-                  exit;
+                    print "\n\n Please enter a valid template file name.\n\n";
+                    exit;
                 }
+
                 // template config file path
-                $template_config=dirname(__FILE__)."/".$parameter['x'];
+                $template_config = $parameter['x'];
 
                 if(!file_exists($template_config))
                 {
@@ -50,11 +57,10 @@
           
                 if(isset($parameter['r']))
                 {
-                   
                     if($parameter['r'] == "png"||$parameter['r'] == "jpg"||$parameter['r'] == "jpeg")
                     {
                         // Output file path
-                        $output_filepath=dirname(__FILE__)."/" ."output.".$parameter['r'];
+                        $output_filepath=dirname(__FILE__)."/output"."/"."output.".$parameter['r'];
 
                         if(file_exists($output_filepath))
                         {
@@ -76,7 +82,7 @@
                 }
                 else
                 {
-                    $output_filepath=dirname(__FILE__)."/" ."output.png";
+                    $output_filepath=dirname(__FILE__)."/output"."/" ."output.png";
                   
                     if(file_exists($output_filepath))
                     {
@@ -88,8 +94,6 @@
                     // Create a output image
                     output_image($template,$output_filepath);
                 }
-              
-
             }
             else
             {
@@ -104,19 +108,43 @@
         }
         if(isset($parameter['c']))
         {
-            $template=get_template($template_filepath,$output_filepath);
-            
+           
+            list($width, $height) = getimagesize($template_filepath);
+            $new_template = imagecreatetruecolor($width,$height);
             //Covert hexacode to rgb code
             $new_rgb=hex2rgb($parameter['c']); 
         
-            $new_color = imagecolorallocate($template,$new_rgb['r'],$new_rgb['g'],$new_rgb['b']);
+            $new_color = imagecolorallocate($new_template,$new_rgb['r'],$new_rgb['g'],$new_rgb['b']);
             
             //Fill Backgroud color 
-            imagefill($template, 0, 0,$new_color);
+            imagefill($new_template, 0, 0,$new_color);
 
-            // Create a output image
-            output_image($template,$output_filepath);
-            print "\n Backgroud-color set successfully \n";
+            if(!isset($parameter['s']))
+            {
+                $template=get_template($template_filepath,$output_filepath);
+
+                $template=imagecreatefrompng($template_filepath);
+                $color = imagecolorallocate($template,255,90,95);
+
+                $color_transparent='imagecolortransparent.png';
+
+                if (file_exists($color_transparent)) 
+                {
+                    unlink($color_transparent);
+                }
+        
+                imagepng($template, $color_transparent);
+
+                // Create Transparent image 
+                imagecolortransparent($template, $color);
+                imagecopymerge($new_template,$template,0,0,0,0,$width, $height,95);
+            }
+          
+                // Create a output image
+                output_image($new_template,$output_filepath);
+                print "\n Backgroud-color set successfully \n";
+   
+           
         }
 
         if(isset($parameter['i']))
@@ -127,12 +155,12 @@
                 || $background_ext == "jpge" || $background_ext == "JPGE")
             {
                 // Background image path
-                $background_filepath=dirname(__FILE__) ."/backgorund"."/".$parameter['i'];
+                $background_filepath=$parameter['i'];
               
                 if(!file_exists($background_filepath))
                 {
                     print "\n\n Please enter a valid backgorund file name.\n\n";
-                     exit;
+                    exit;
                 }
 
                 $template=get_template($template_filepath,$output_filepath);
@@ -194,7 +222,7 @@
                 || $screen_ext == "jpeg" || $screen_ext == "JPEG")
             {
                 // Screen shot image path
-                $screen_filepath=dirname(__FILE__) ."/images"."/".$parameter['s'];
+                $screen_filepath=$parameter['s'];
               
                 if(!file_exists($screen_filepath))
                 {
@@ -262,6 +290,7 @@
             //Get Text Content from Config file
 
             $text_coordinate=get_data('text',$template_config);
+         
             if($text_coordinate == null)
             {
                 print "\n\n Please put validate configrution for text \n\n";
@@ -270,20 +299,40 @@
             // Get Fort color by default it is white color.
             $fornt_color=(isset($parameter['a']))?$parameter['a']:"#ffffff";
             $new_rgb=hex2rgb($fornt_color);
+          
 
             $template=get_template($template_filepath,$output_filepath);
+       
             
             $image_width = imagesx($template);  
             $image_height = imagesy($template);
             $margin = 45;
+          
 
             $text=$parameter['f'];
-            $text_size=(isset($parameter['z']))?$parameter['z']:58;
-
+            if(isset($parameter['z']))
+            {
+                $text_size=$parameter['z'];
+            }
+            else
+            {
+                $length=strlen($text);
+            
+                $data=(100 * 50)/$length;
+                $text_size=ceil($data);
+            
+                if($text_size >= 100)
+                {
+                    $text_size=$text_size % 100;
+                   
+                }
+                $text_size = ($text_size == 0)?55:$text_size;
+              
+            }
             //explode text by words
             $text_a = explode(' ', $text);
             $text_new = '';
-    
+           
             foreach($text_a as $word){
                 //Create a new text, add the word, and calculate the parameters of the text
                 $box = imagettfbbox($text_size, 0, $font_path, $text_new.' '.$word);
@@ -294,17 +343,20 @@
                     $text_new .= " ".$word;
                 }
             }
-    
-            $font_color = imagecolorallocate($template,$new_rgb['r'],$new_rgb['g'],$new_rgb['b']);
-            $stroke_color = imagecolorallocate($text_size, 0, 0, 0);
-    
-            // Set Path to Font File
-
-            imagettfstroketext($template, $text_size ,0,$text_coordinate['x'],$text_coordinate['y'],$font_color, $stroke_color, $font_path, $text_new, 0);
-    
-            // Write it
-         
+           
+            $box = new Box($template);
+            $box->setFontFace(__DIR__.'/arial.ttf'); // http://www.dafont.com/minecraftia.font
+            $box->setFontColor(new Color($new_rgb['r'],$new_rgb['g'],$new_rgb['b']));
+            //$box->setTextShadow(new Color(0, 0, 0, 50), 2, 2);
+            $box->setFontSize($text_size);
+            $box->setLineHeight(1.5);
+            //$box->enableDebug();
+            $box->setBox($text_coordinate['x'],$text_coordinate['y'],$text_coordinate['width'],$text_coordinate['height']);
+            $box->setTextAlign($text_coordinate['alignment'],$text_coordinate['alignment']);
+            $box->draw($text_new);
+           
             //Create a Output file
+          
             output_image($template,$output_filepath);
 
              print "\n Front set successfully. \n";
@@ -313,10 +365,11 @@
 
         if(isset($parameter['o']))
         {
-         
-           //Get Output file Resolution.
+           
+            //Get Output file Resolution.
 
            $resolution= explode("x",$parameter['o']);
+
            if(count($resolution) == 2)
            {
                 $dest_width=(int)$resolution[0];
@@ -428,13 +481,34 @@
        
     }
 
-    function imagettfstroketext(&$image, $size, $angle, $x, $y, &$textcolor, &$strokecolor, $fontfile, $text, $px) // Add Multiple line text into image
+   /* function imagettfstroketext(&$image, $size, $angle, $x, $y, &$textcolor, &$strokecolor, $fontfile, $text, $px) // Add Multiple line text into image
     {
         for($c1 = ($x-abs($px)); $c1 <= ($x+abs($px)); $c1++)
             for($c2 = ($y-abs($px)); $c2 <= ($y+abs($px)); $c2++)
                 $bg = imagettftext($image, $size, $angle, $c1, $c2, $strokecolor, $fontfile, $text);
 
         return imagettftext($image, $size, $angle, $x, $y, $textcolor, $fontfile, $text);
+    }*/
+    function newText($im, $size, $angle= 0, $x, $y, $color, $font, $text,$align = "left",$border=false,$width=0,$height=0){
+       
+        if($align == "center")
+        {
+        
+            if ($border == true ){
+               imagerectangle($im, $x, $y, $x +$width, $y + $height, $color);
+            }
+            $bbox = imageftbbox($size, 0, $font, $text);
+    
+            // Marcamos el ancho y alto
+            $s_width  = $bbox[4];
+            $s_height = $bbox[5];  
+            
+            $y = $y + ($height-$s_height)/2;
+            $x = $x + ($width-$s_width)/2;
+    
+        }
+         
+        imagettftext($im, $size, $angle, $x, $y, $color, $font, $text);
     }
 
 ?> 
