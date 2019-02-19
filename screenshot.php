@@ -111,6 +111,7 @@
            
             list($width, $height) = getimagesize($template_filepath);
             $new_template = imagecreatetruecolor($width,$height);
+          
             //Covert hexacode to rgb code
             $new_rgb=hex2rgb($parameter['c']); 
         
@@ -137,13 +138,12 @@
 
                 // Create Transparent image 
                 imagecolortransparent($template, $color);
-                imagecopymerge($new_template,$template,0,0,0,0,$width, $height,95);
+                imagecopymerge($new_template,$template,0,0,0,0,$width, $height,100);
             }
           
-                // Create a output image
-                output_image($new_template,$output_filepath);
-                print "\n Backgroud-color set successfully \n";
-   
+            // Create a output image
+            output_image($new_template,$output_filepath);
+            print "\n Backgroud-color set successfully \n";
            
         }
 
@@ -236,7 +236,7 @@
                 $resolution=get_data('screenshot',$template_config);
                 if($resolution == null)
                 {
-                    print "\n\n Please put validate configrution for screenshot \n\n";
+                    print "\n\n Please put validate configrution for screen-shot \n\n";
                     exit;
                 }
                 $width=$resolution['width'];
@@ -255,6 +255,12 @@
                 }
 
                 $thumb_nail = imagecreatetruecolor($width,$height);
+                 //Fix Screenshot into template
+                //imagecopymergegray($template, $thumb_nail,$resolution['x'],$resolution['y'], 0, 0,$resolution['width'],$resolution['height'],0);
+                
+
+                 // Create output image
+                
                        
                 if($screen_ext == "png" || $screen_ext == "PNG")
                 {
@@ -264,18 +270,33 @@
                 {
                     $source = imagecreatefromjpeg($screen_filepath);
                 }
-               
+                
                 imagecopyresampled($thumb_nail, $source, 0, 0, 0, 0,$width,$height, $width_orig,$height_orig);
-                $black = imagecolorallocate($thumb_nail, 0, 0, 0);
-                imagecolortransparent($thumb_nail, $black);
+            
+                if(isset($resolution['degrees']))
+                {
+                 
+                    $thumb_nail = imagerotate($thumb_nail,$resolution['degrees'],0);
+                  
+                }
+                if($resolution['width'] >= $width)
+                {
+                    $resolution['width']=$width;
+                }
+                if($resolution['height'] >= $height)
+                {
+                    $resolution['height']=$height;
+                }
 
+              
+               
                 //Fix Screenshot into template
-                imagecopymerge($template, $thumb_nail,$resolution['x'],$resolution['y'], 0, 0,$resolution['width'],$resolution['height'],100);
-
+                imagecopymergegray($template, $thumb_nail,$resolution['x'],$resolution['y'], 0, 0, $resolution['width'],$resolution['height'],100);
+             
                 // Create output image
                 output_image($template,$output_filepath);
               
-                print "\n Screen shot set successfully. \n";
+                print "\n Screen-shot set successfully. \n";
 
             }
             else
@@ -300,15 +321,12 @@
             $fornt_color=(isset($parameter['a']))?$parameter['a']:"#ffffff";
             $new_rgb=hex2rgb($fornt_color);
           
-
             $template=get_template($template_filepath,$output_filepath);
-       
-            
+      
             $image_width = imagesx($template);  
             $image_height = imagesy($template);
             $margin = 45;
           
-
             $text=$parameter['f'];
             if(isset($parameter['z']))
             {
@@ -359,7 +377,7 @@
           
             output_image($template,$output_filepath);
 
-             print "\n Front set successfully. \n";
+            print "\n Front set successfully. \n";
 
         } 
 
