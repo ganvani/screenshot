@@ -7,9 +7,9 @@
 
     $options = ['-t'=>'template image','-i'=>'background image','-s'=>'screen-shot image','-f'=>'fornt content',
             '-c'=>'background color','-a'=>'fornt color','-z' => 'fornt size',
-            '-x'=>'template config file','-r'=>'Output image formate','-o'=>'Output image size'];
+            '-x'=>'template config file','-r'=>'Output image formate','-o'=>'Output image size','-d' => 'output path'];
 
-    $parameter = getopt("t:s:i:f:c:a:z:x:r:o:");
+    $parameter = getopt("t:s:i:f:c:a:z:x:r:o:d:");
   
     if (count($parameter) <= 0 ) { 
         // For Help command
@@ -60,7 +60,16 @@
                     if($parameter['r'] == "png"||$parameter['r'] == "jpg"||$parameter['r'] == "jpeg")
                     {
                         // Output file path
-                        $output_filepath=dirname(__FILE__)."/output"."/"."output.".$parameter['r'];
+                        if(isset($parameter['d']))
+
+                        {      
+                                $output_filepath=$parameter['d'];
+                        }
+                        else
+                        {
+                            $output_filepath=dirname(__FILE__)."/output"."/"."output.".$parameter['r'];
+                        }
+                 
 
                         if(file_exists($output_filepath))
                         {
@@ -82,7 +91,15 @@
                 }
                 else
                 {
-                    $output_filepath=dirname(__FILE__)."/output"."/" ."output.png";
+                    if(isset($parameter['d']))
+                    {
+                      
+                        $output_filepath=$parameter['d'];
+                    }
+                    else
+                    {
+                        $output_filepath=dirname(__FILE__)."/output"."/"."output.".$parameter['r'];
+                    }
                   
                     if(file_exists($output_filepath))
                     {
